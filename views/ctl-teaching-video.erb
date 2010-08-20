@@ -1,0 +1,15 @@
+<html>
+  <head>
+  </head>
+
+  <body>
+    <h1>Select Main Video</h1>
+    
+    <ul>
+    <% selections.each do |struct| %>    
+      <li><%= struct.subdir %>: <a href="?video=<%= struct.subdir %>"><%= struct.caption %></a>
+    <% end %>    
+    </ul>
+  </body>
+
+</html>
