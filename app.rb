@@ -1,82 +1,21 @@
+require 'yaml'
+require 'helpers'
+
 
 TEACHING_VIDEOS = 'teaching-videos'
+DANCING_VIDEOS  = 'dancing-videos'
+DATA_DIR        = '/tmp'
 
-helpers do
 
-  def teaching_video_dir
-    File.join(File.dirname(__FILE__), "public/#{TEACHING_VIDEOS}")
-  end
-
-  # expect a directory structure like
-  # 01/
-  # 01/somename.mp4
-  # 01/caption
-
-  Struct.new('Video', :caption, :htmlpath, :type, :subdir)
-
-  def check_video_subdir dir
-    caption    = nil
-    htmlpath   = nil
-    type       = nil
-    subdir     = dir
-    Dir.new(File.join(teaching_video_dir, dir)).each do |filename|  # e.g. look in teaching-video/01 at each filename FILENAME
-      case filename
-      when /\.mp4$/i    # TODO: add more as necessary
-        htmlpath = [ "/#{TEACHING_VIDEOS}", dir, filename ].join('/')
-        type = :flash
-      when /\.ogv$/i
-        htmlpath = [ "/#{TEACHING_VIDEOS}", dir, filename ].join('/')
-        type = :native
-      when /caption/i  
-        caption = File.read(File.join(teaching_video_dir, dir, filename)).strip
-      end
-    end
-    return htmlpath.nil? ? nil : Struct::Video.new(caption, htmlpath, type, subdir)
-  end
-
-  
-  # teaching_video_selections - return a list of structs < :caption :htmlpath :type :subdir > associated
-  # with each subdirectory under the teaching_video_dir().
-
-  def teaching_video_selections
-    list = []
-    Dir.new(teaching_video_dir).each do |subdir|
-      next unless File.directory?(File.join(teaching_video_dir, subdir))
-      next if subdir =~ /^\./
-      list.push subdir
-    end
-    list.sort!
-
-    candidates = []
-    list.each do |subdir|
-      video_data = check_video_subdir(subdir)
-      candidates.push video_data unless video_data.nil?
-    end
-    candidates
-  end
-
-  def marquee_datafile
-    File.join(File.dirname(__FILE__), 'data', 'marquee')
-  end
-
-  def read_marquee
-    text = (File.read marquee_datafile).strip
-  rescue => e
-    e.message
-  else
-    text
-  end
-
-  def write_marquee text
-    File.open(marquee_datafile, 'w') { |fh| fh.puts text }
-  end
-
-end
 
 get '/' do
-  redirect 'ctl', 302
+  if mode == :teaching
+    redirect '/teaching', 302
+  else
+    redirect '/dancing', 302
+  end
 end
- 
+
 get '/marquee.html' do
   erb :marquee, :locals => { :marquee_text => read_marquee }
 end
@@ -92,7 +31,7 @@ get '/ctl/?' do
 end
 
 get '/ctl/marquee/?' do
-  erb :'ctl-marquee'
+  erb :'ctl-marquee', :locals => { :data => marquee_data }
 end
 
 get '/ctl/teaching-video/?' do
@@ -102,10 +41,42 @@ get '/ctl/teaching-video/?' do
     erb :'ctl-teaching-video', :locals => { :selections => teaching_video_selections }
   end
 end
+  
+post '/ctl/marquee' do
 
-post '/ctl/marquee/?' do
-  write_marquee "Next up: #{params['dance']}, #{params['skill']} dance, in #{params['countdown']} minutes."
-  redirect '/ctl/teaching-video', 302
+  if params['action'] !~ /no change/i
+    now = Time.now.to_i
+    
+    data = Hash.new
+
+    data[:beginning]    = safe_seconds params['beginning']
+    data[:intermediate] = safe_seconds params['intermediate']
+    data[:advanced]     = safe_seconds params['advanced']
+    
+    # when someone uses the marquee setup, they are specifying that
+    # one of the states in the sequence beginning => intermediate =>
+    # advanced has already been completed. So if, say, the beginning
+    # dance has started, we'll roll back the start time by the length
+    # of the beginning dance, so when we need to know our current
+    # state we'll get it right...
+
+    case params['action']
+    when 'beginning'
+      start = now - data[:beginning]
+    when 'intermediate'
+      start = now - (data[:beginning]  + data[:intermediate])
+    when 'advanced'
+      start = now - (data[:beginning]  + data[:intermediate] + data[:advanced])
+    else
+      start = now  # don't know what else to do... (can't happen)
+    end
+
+    data[:start] = start
+
+    marquee_data data
+  end
+  redirect '/', 302
+
 end
 
 

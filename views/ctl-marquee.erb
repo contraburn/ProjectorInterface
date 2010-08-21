@@ -1,52 +1,189 @@
 <html>
   <head>
-  </head>
+    <style type="text/css">
 
+      h1 { color:red; text-align:center; font-size:40px; padding:20px 0 0 0; }
+      body { background-color:black; color:red; font-size:32px; font-family:arial; } 
+      table, td, th { background-color:black; color:red; font-size:32px; border-width:0; } 
+      td { padding:5px; }
+
+      fieldset { border-color:red; border-style:solid; }
+
+      .minutes-input { color:red; text-align:center; font-size:32px; font-family:arial; background-color:black; 
+                       border:0; border-spacing:0;  padding: 0 0 5px 0; max-width:60px; } 
+
+      .submit-button { color:red; text-align:center; font-size:32px; font-family:arial; background-color:black; 
+                       border-style: solid; border-color:red; border-spacing:0;  padding: 5px;  } 
+
+      .submit-button:hover { background-color:red; color:black }
+
+    </style>
+
+    <script type="text/javascript"  src="/jquery-1.4.js"> </script>
+    <script type="text/javascript"> 
+
+      var zero = function (obj) {
+        $(obj)[0].value = 0;
+      }; 
+
+      var increment = function (obj, amount) {
+	  var minutes = parseInt($(obj)[0].value);
+	  if (typeof minutes === 'number' && isFinite(minutes)) {
+	      minutes = minutes + amount;
+	  } else {
+	      minutes = 0;
+	  }
+	  if (minutes <= 0) {
+	      $(obj)[0].value = 0;
+	  } else {
+	      $(obj)[0].value = minutes;
+	  }                    
+      };
+
+      $(function() { 
+         $('#intermediate-sub-more')[0].onclick  = function(event) { increment('#intermediate-minutes', -5); }; 
+         $('#intermediate-sub')[0].onclick       = function(event) { increment('#intermediate-minutes', -1); }; 
+         $('#intermediate-add')[0].onclick       = function(event) { increment('#intermediate-minutes',  1); };  
+         $('#intermediate-add-more')[0].onclick  = function(event) { increment('#intermediate-minutes',  5); };  
+
+         $('#advanced-sub-more')[0].onclick  = function(event) { increment('#advanced-minutes', -5); }; 
+         $('#advanced-sub')[0].onclick       = function(event) { increment('#advanced-minutes', -1); }; 
+         $('#advanced-add')[0].onclick       = function(event) { increment('#advanced-minutes',  1); };  
+         $('#advanced-add-more')[0].onclick  = function(event) { increment('#advanced-minutes',  5); };  
+
+         $('#beginning-sub-more')[0].onclick  = function(event) { increment('#beginning-minutes', -5); }; 
+         $('#beginning-sub')[0].onclick       = function(event) { increment('#beginning-minutes', -1); }; 
+         $('#beginning-add')[0].onclick       = function(event) { increment('#beginning-minutes',  1); };  
+         $('#beginning-add-more')[0].onclick  = function(event) { increment('#beginning-minutes',  5); };  
+      });
+
+    </script>
+  </head>
   <body>
-    <h1>Set Marquee</h1>
+
+    <h1>Setup Marquee Cycle</h1>
 
     <form method="post">
-      <p>
-	Next up: 
-	<select name="skill">
-	  <option value="a beginners">a beginners</option>
-	  <option value="an intermediate">an intermediate</option>
-	  <option value="an advanced">an advanced</option>
-	</select>
-	dance, the 
-	<select name="dance">
-	  <option value="chorus jig">chorus jig</option>
-	  <option value="hay in the barn">hay in the barn</option>
-	</select>,
-	in
-	<select name="countdown">
-	  <option value="5">5</option>
-	  <option value="10">10</option>
-	  <option value="15">15</option>
-	  <option value="20">20</option>
-	  <option value="25">25</option>
-	  <option value="30">30</option>
-	  <option value="35">35</option>
-	  <option value="40">40</option>
-	  <option value="45">45</option>
-	  <option value="50">50</option>
-	  <option value="55">55</option>
-	  <option value="60">60</option>
-	</select>
-	minutes.
-	
-      </p>
 
-      <p>
-	<input type="submit" value="set marquee"/>
-      </p>
+      <table valign="center" align="center">
+
+	<tr>
+	  <td colspan="7">&nbsp;</td>
+	</tr>
+	
+	<tr>
+          <td>
+            <div id="beginning-add-more">
+              <img src="/images/arrow-up-more.png">
+            </div>
+          </td>
+          <td>
+            <div id="beginning-add">
+              <img class="up" src="/images/arrow-up.png">
+            </div>
+          </td>
+          <td>
+            <div id="beginning-sub">
+              <img src="/images/arrow-down.png">
+            </div>
+          </td>
+          <td>
+            <div id="beginning-sub-more">
+              <img src="/images/arrow-down-more.png">
+            </div>
+          </td>
+          <td>
+            Beginners dance lasts
+          </td>
+          <td>
+            <input class="minutes-input" id="beginning-minutes" name="beginning" type="text" value="<%= data[:beginning] / 60 %>"/>
+          </td>
+          <td>
+            minutes
+          </td>
+	</tr>
+	
+	<tr>
+          <td>
+            <div id="intermediate-add-more">
+              <img src="/images/arrow-up-more.png">
+            </div>
+          </td>
+          <td>
+            <div id="intermediate-add">
+              <img src="/images/arrow-up.png">
+            </div>
+          </td>
+          <td>
+            <div id="intermediate-sub">
+              <img src="/images/arrow-down.png">
+            </div>
+          </td>
+          <td>
+            <div id="intermediate-sub-more">
+              <img src="/images/arrow-down-more.png">
+            </div>
+          </td>
+          <td>
+            Intermediate dance lasts
+          </td>
+          <td>
+            <input class="minutes-input" id="intermediate-minutes" name="intermediate" type="text" value="<%= data[:intermediate] / 60 %>"/>
+          </td>
+          <td>
+            minutes
+          </td>
+	</tr>
+	
+	<tr>
+          <td>
+            <div id="advanced-add-more">
+              <img src="/images/arrow-up-more.png">
+            </div>
+          </td>
+          <td>
+            <div id="advanced-add">
+              <img src="/images/arrow-up.png">
+            </div>
+          </td>
+          <td>
+            <div id="advanced-sub">
+              <img src="/images/arrow-down.png">
+            </div>
+          </td>
+          <td>
+            <div id="advanced-sub-more">
+              <img src="/images/arrow-down-more.png">
+            </div>
+          </td>
+          <td>
+            Advanced dance lasts
+          </td>
+          <td>
+            <input class="minutes-input" id="advanced-minutes" name="advanced" type="text" value="<%= data[:advanced] / 60 %>"/>
+          </td>
+          <td>
+            minutes
+          </td>
+	</tr>
+	
+	<tr>
+	  <td colspan="7">&nbsp;</td>
+	</tr>
+	
+	<tr>
+	  <td colspan="7" >
+	    <fieldset>
+	      <legend>&nbsp;Select dance now starting&nbsp;</legend>
+      	      <input class="submit-button" type="submit" name="action" value="beginners"/>  
+	      <input class="submit-button" type="submit" name="action" value="intermediate"/> 
+	      <input class="submit-button" type="submit" name="action" value="advanced"/>
+	      <input class="submit-button" type="submit" name="action" value="no changes"/>
+	    </fieldset>
+	  </td>
+	</tr>
+		
+      </table>
     </form>
-    
   </body>
 </html>
-
-
-
-
-
-
