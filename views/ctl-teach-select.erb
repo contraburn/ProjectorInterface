@@ -1,14 +1,49 @@
 <html>
   <head>
+    <link href="/ctl.css" rel="stylesheet" type="text/css">
+    <style type="text/css">
+      a { text-decoration:none; }
+      a:link {color:red;}
+      a:visited {color:red;}
+      a:hover {color:white;}
+      a:active {color:red;}
+
+      p#select-control { margin: 50px 20px 0 20px; }
+
+      li { margin: 10px 0 10px 0; list-style-type:none; }
+      ul { text-align: center; }
+    </style>
+    
+
+
   </head>
 
   <body>
-    <h1>Select Main Video</h1>
-    
-    <ul>
-    <% selections.each do |struct| %>    
-      <li><%= struct.subdir %>: <a href="?video=<%= struct.subdir %>"><%= struct.caption %></a>
-    <% end %>    
-    </ul>
+    <h1>Select Teaching Video</h1>
+
+    <form method="post">
+          
+      <ul>
+	<% selections.each do |struct| %>    
+	<li><input class="submit-button" type="submit" name="action" value="<%= struct.subdir %> - <%= struct.name %>">
+	<% end %>	
+      </ul>
+
+      <p id="select-control">
+      <table width="100%">
+	<tr>
+	  <td align="left" width="33%">
+	    <a href="/ctl/teach-select/<%= previous_page %>"><%= previous_text %></a>
+	  </td>
+	  <td align="center" width="33%">
+	    <a href="/">Cancel</a>
+	  </td>
+
+	  <td align="right" width="33%">
+	    <a href="/ctl/teach-select/<%= next_page %>"><%= next_text %></a>
+	  </td>
+	</tr>
+      </table>
+      </p>
   </body>
 </html>

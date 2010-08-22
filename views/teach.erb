@@ -1,43 +1,48 @@
 <html>
   <head>
+    <link href="/ctl.css" rel="stylesheet" type="text/css">
+    <style type="text/css">
+      #caption-tag { text-align:center; }
+    </style>
 
+    <script type="text/javascript"  src="/jquery-1.4.js"> </script>
+    <script type="text/javascript"> 
 
+      function getMarqueeData () { 
+        $('#marquee-tag').load('/marquee');
+      };
+
+      $(function() { 
+         getMarqueeData();      
+         setInterval(getMarqueeData, 10000);  // every ten seconds, requery the server for updated marquee data
+         $('#marquee-tag')[0].onclick = function(event) { window.location = '/ctl/marquee'  }; // change marquee data
+         $('#caption-tag')[0].onclick = function(event) { window.location = '/ctl/mode'  };    // change dance/teaching mode, select videos
+      });
+
+    </script>
   </head>
 
   <body>
-
+    <marquee><div id="marquee-tag"><%= marquee_text %></div></marquee>
     <p>
-    <center>
-      <a href="http://google.com">
-	<marquee><%= marquee_text %></marquee>
-      </a>
-    </center>
-    </p>
-
-    <p>
-    <center>
-      <% if selection.type == :flash %>
-       <embed
-	 flashvars="file=<%= selection.htmlpath %>&autostart=true&repeat=single&controlbar=none&volume=0"
+      <% if video_html_path =~ /ogv/i %>
+      <video width="100%" height="70%" loop controls autobuffer autoplay>
+	<source src="<%= video_html_path %>"  type="video/ogg" />
+      </video>
+      <% else %>
+      <embed
+	 flashvars="file=<%= video_html_path %>&autostart=true&repeat=single&controlbar=none&volume=0"
 	 id="player1"
 	 name="player1"
 	 src="/player.swf"
-	 width="80%"
-	 height="80%"
+	 width="100%"
+	 height="70%"
 	 />
-      <% else %>
-       <video width="80%" height="80%" loop controls autobuffer autoplay>
-	<source src="<%= selection.htmlpath %>"  type="video/ogg" />
-       </video>
       <% end %>
-
-    </center>
     </p>
 
     <p>
-    <center>
-      <%= selection.caption %>
-    </center>
+      <img id="caption-tag" src="<%= caption_image_path  %>">
     </p>
   </body>
 

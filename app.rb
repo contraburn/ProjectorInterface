@@ -4,9 +4,8 @@ require 'support'
 TEACHING_VIDEOS     = 'teaching-videos'
 DANCING_VIDEOS      = 'dancing-videos'
 DATA_DIR            = '/tmp'               #### TODO: definition to settings, via config.ru
-SELECTIONS_PER_PAGE = 4
+SELECTIONS_PER_PAGE = 5
 
-#### TODO: save mode, selected video
 
 get '/' do
   if mode == :dance
@@ -16,29 +15,26 @@ get '/' do
   end
 end
 
-#### TODO: change to check in directory for actual name
-
 get '/dance/?' do
+  data = dance_data
   erb :dance, :locals => { :marquee_text => marquee_string(), 
-                           :left_video_html_path  => '/dancing-videos/rhs.mp4',
-                           :right_video_html_path => '/dancing-videos/rhs.mp4',
-
-                           # :left_video_html_path  => '/dancing-videos/lhs.ogv',
-                           # :right_video_html_path => '/dancing-videos/lhs.ogv',
-
-                           # :left_video_html_path  => '/dancing-videos/lhs.ogv',
-                           # :right_video_html_path => '/dancing-videos/rhs.mp4',
-
-                           :caption_image_path =>    '/images/dummy-caption.png'
+                           :left_video_html_path  => data[:lhs],
+                           :right_video_html_path => data[:rhs],
+                           :caption_image_path    => data[:caption]
   }
 end
 
-#### TODO: this should just be '/teach/?'  
 
-get "/#{TEACHING_VIDEOS}/:subdir" do |subdir|
-  data = check_video_subdir(subdir)     ## handle error condition here.  
-  erb :"teaching-video", :locals => { :selection => data, :subdir => subdir, :marquee => read_marquee }
+# render the teaching video directory
+
+get '/teach/?' do
+  data = teach_data
+  erb :teach, :locals => { :marquee_text => marquee_string(), 
+                           :video_html_path => data.video_htmlpath, 
+                           :caption_image_path => data.caption_htmlpath 
+  }
 end
+
 
 # A page for getting at the marquee string, which we'll retrieve via ajax from /dance and /teach pages.
 
@@ -46,32 +42,61 @@ get '/marquee/?' do
   marquee_string
 end
 
-#### TODO: create this to switch from dance/teach, or to go select a teaching video
-
+# 
 get '/ctl/mode' do
   erb :'ctl-mode', :locals => { :current_mode => mode }
 end
 
 post '/ctl/mode' do
-
-  if params['action'] !~ /no change/i
-    params['action']
-  else
-    'no change'
+  case params['action']
+  when  /no change/i
+    redirect '/', 302
+  when  /dance/i
+    mode :dance
+    redirect '/dance', 302
+  when  /teach/i
+    #  mode :teach 
+    redirect '/ctl/teach-select/1', 302
   end
-
-#  redirect '/', 302
+  redirect '/', 302
 end
+
+
+post '/ctl/teach-select/:page' do
+  dir = (params['action'].split(' - '))[0]
+  mode_data({ :mode => :teach, :selected_teaching_video => dir })
+  redirect '/', 302
+end
+
 
 
 # select one of the teaching videos
 
-get '/ctl/teaching-video/?' do
-  if params['video']
-    redirect "/#{TEACHING_VIDEOS}/#{params['video']}", 302
-  else
-    erb :'ctl-teaching-video', :locals => { :selections => teaching_video_selections }
-  end
+get '/ctl/teach-select/?' do
+  redirect '/ctl/teach-select/1', 302  # go to page 1
+end
+
+
+# paginate the list of teaching videos
+
+get '/ctl/teach-select/:page'  do |page|
+
+  page_num = page.to_i
+
+  list = teaching_video_selections()
+  page_list = list[ (page_num - 1) * SELECTIONS_PER_PAGE .. (page_num * SELECTIONS_PER_PAGE) - 1]
+
+  redirect '/ctl/teach-select/1', 302 unless page_list
+
+  total_pages = (list.length + (SELECTIONS_PER_PAGE - 1)) / SELECTIONS_PER_PAGE
+  
+  erb :'ctl-teach-select', :locals => 
+    { :selections    =>  page_list,
+      :previous_page =>  page_num - 1,
+      :previous_text => (page_num == 1 ? '': 'Previous'),
+      :next_page     =>  page_num + 1,
+      :next_text     => (page_num >= total_pages ? '': 'Next'),
+    }
 end
 
 # A page with a form for the marquee values:
