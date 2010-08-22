@@ -1,5 +1,68 @@
 helpers do
 
+  # logic for dance cycle. If you change this, you may need to change the rollback settings
+  # in app.rb in the "post '/ct/marquee'" section.
+
+  def marquee_string
+
+    data = marquee_data()
+    now  = Time.now.to_i
+ 
+    cycle_duration = data[:beginning] + data[:intermediate] + data[:advanced]  # length of entire run of dance cycle in seconds
+
+    return ". . . . . . . . . . . . . ." if cycle_duration == 0
+
+    cycle_number  = (now - data[:start]) / cycle_duration   # which cycle we're on
+    cycle_elapsed = (now - data[:start]) % cycle_duration   # where we are in the current cycle
+
+    dances = []
+    accum = 0
+    [:beginning, :intermediate, :advanced].each do |state|
+      time = data[state]
+      next if time == 0
+      dances.push( { :state => state, :begins => accum } )
+      accum += time
+    end
+
+    later_dances = dances.select { |dance| dance[:begins] > cycle_elapsed }
+
+    if later_dances.empty?
+      next_state = dances[0][:state]
+      next_start = cycle_duration - cycle_elapsed
+    else
+      next_state = later_dances[0][:state]
+      next_start = later_dances[0][:begins] - cycle_elapsed
+    end
+
+    minutes = (next_start + 30) / 60  # add 30 seconds to round up.
+
+    message = if next_start < 60
+                "Starting Shortly"
+              elsif next_start < 90
+                "Starting In 1 Minute"
+              else
+                "Starting In #{minutes} Minutes At " + (Time.now + next_start).strftime('%I:%M %p')
+              end
+
+    ## message += '  :' + (['!', '@', '#', '%', '^', '&', '*', '+', '='].sort_by {rand}).pop
+
+    return case next_state
+           when :advanced
+             "Next Up: An Advanced Dance " + message
+           when :intermediate
+             "Next Up: An Intermediate Dance " + message
+           when :beginning
+             "Next Up: A Beginning Dance " + message
+           end
+  end
+
+  # conditional pluralize:
+
+  def esses count, singular_form, plural_form = nil
+    plural_form = singular_form + 's' unless plural_form
+    count == 1 ? singular_form : plural_form
+  end
+
   def teaching_videos_dir
     File.join(File.dirname(__FILE__), "public/#{TEACHING_VIDEOS}")
   end
@@ -11,11 +74,14 @@ helpers do
   # check_videos_subdir(dir)  looks into the subdirectory DIR of the teaching videos directory,
   # and returns an info nugget that contains...
 
-  # we expect the sudirectory has a structure like
-  # 01/somename.mp4
-  # 01/caption.img
+  # we expect each sudirectory to have contents like:
+  #
+  # 01/somename.vid   - where '.vid' is one of '.ogv' or 'mp4'
+  # 01/caption.img    - where '.img' is any of '.png' '.jpg' '.jpeg' or '.gif'
 
   Struct.new('Video', :caption, :htmlpath, :type, :subdir)
+
+  ### TODO:  switch to caption image instead of text.
 
   def check_video_subdir dir
     caption    = nil
@@ -24,7 +90,7 @@ helpers do
     subdir     = dir
     Dir.new(File.join(teaching_videos_dir, dir)).each do |filename|  # e.g. look in teaching-video/01 at each filename FILENAME
       case filename
-      when /\.mp4$/i    # TODO: add more as necessary
+      when /\.mp4$/i
         htmlpath = [ "/#{TEACHING_VIDEOS}", dir, filename ].join('/')
         type = :flash
       when /\.ogv$/i
@@ -57,7 +123,7 @@ helpers do
     candidates
   end
 
-  # Return the marquee data, or, if data is supplied, save it as marquee data.
+  # Read and return the marquee data, or, if data is supplied, save it to a data file
 
   def marquee_data new_data = nil
     yml = File.join(DATA_DIR, 'marquee.yml')
@@ -67,7 +133,7 @@ helpers do
       begin
         return YAML::load(File.open(yml))
       rescue
-        marquee_data( { :beginning => 900, :intermediate => 900, :advanced => 900, :timestamp => Time.now.to_i } )   # just make something up to start  ###
+        marquee_data( { :beginning => 600, :intermediate => 600, :advanced => 600, :timestamp => Time.now.to_i } )   # just make something up to start
         return marquee_data
       end
     end
@@ -82,11 +148,9 @@ helpers do
     return 0
   end
 
-  # Are we in teaching or dance mode?  Return one of :teaching, :dancing; if 
-  # data is supplied, set the mode to that.
+  #### TODO - make this read from a data file...
 
   def mode new_mode = nil
-    :teaching
+    :dance
   end
-
 end
