@@ -1,0 +1,23 @@
+<html>
+  <head>
+    <link href="/ctl.css" rel="stylesheet" type="text/css">
+    <style type="text/css">
+      #mode-ctl { text-align: center; margin: 40px 0 0 0; }
+    </style>
+  </head>
+  <body>
+
+    <h1>Set Mode - (Current Mode: <%= mode.to_s.capitalize  %>)</h1>
+
+    <form method="post">
+
+	<p id="mode-ctl">
+      	  <input class="submit-button" type="submit" name="action" value="dance"/>  
+	  <input class="submit-button" type="submit" name="action" value="teach"/> 
+	  <input class="submit-button" type="submit" name="action" value="no changes"/> 
+	</p>
+
+
+    </form>
+  </body>
+</html>

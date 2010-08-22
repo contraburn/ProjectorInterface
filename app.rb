@@ -1,17 +1,18 @@
 require 'yaml'
 require 'support'
 
-TEACHING_VIDEOS = 'teaching-videos'
-DANCING_VIDEOS  = 'dancing-videos'
-DATA_DIR        = '/tmp'               #### TODO: definition to settings, via config.ru
+TEACHING_VIDEOS     = 'teaching-videos'
+DANCING_VIDEOS      = 'dancing-videos'
+DATA_DIR            = '/tmp'               #### TODO: definition to settings, via config.ru
+SELECTIONS_PER_PAGE = 4
 
 #### TODO: save mode, selected video
 
 get '/' do
-  if mode == :teaching
-    redirect '/teach', 302
-  else
+  if mode == :dance
     redirect '/dance', 302
+  else
+    redirect '/teach', 302
   end
 end
 
@@ -48,9 +49,22 @@ end
 #### TODO: create this to switch from dance/teach, or to go select a teaching video
 
 get '/ctl/mode' do
-  "work in progress"
+  erb :'ctl-mode', :locals => { :current_mode => mode }
 end
 
+post '/ctl/mode' do
+
+  if params['action'] !~ /no change/i
+    params['action']
+  else
+    'no change'
+  end
+
+#  redirect '/', 302
+end
+
+
+# select one of the teaching videos
 
 get '/ctl/teaching-video/?' do
   if params['video']

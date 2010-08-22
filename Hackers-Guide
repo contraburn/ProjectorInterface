@@ -1,0 +1,105 @@
+Mark,
+
+This system uses sinatra, a web services library written in ruby.
+Each action is defined in the ./app.rb file - an action is a method
+like GET or POST associated with a particlar page.  Additional ruby
+routines are included from the ./support.rb file (that would include
+code to store and read state information files, format text, assemble
+the marquee string, and the like).  If you want to change the format
+or text of the marquee string, check the code and comments in the
+./support.rb file.  It should be easy enough to modify.
+
+When you modify something, touch the ./tmp/restart.txt file to let the
+server know it needs to reload everything.  It's apache and mod_ruby
+(a.k.a. passenger phusion) as the web server.
+
+Some pages are purely virtual - there is no underlying file.  /marquee
+is a page like that - it returns only a bit of text, and it is defined
+in the ./app.rb file.
+
+Some pages are static pages, and they live under the ./public/
+directory.  Videos, images, stylesheets and javascript libraries go
+there.
+
+Some pages are templates.  Those live under the ./views/ directory.
+They are where most of the action is.  I'm using 'erb', which is a
+kind of standard ruby way of mixing code and html.
+
+The important template pages managed by ./app.rb are as follows; the
+first path is the file, the second is the URL path
+
+ ./views/ctl-marquee.erb     - this is an html form page that includes some
+  /ctl/marquee                 stylesheets, some javascript, and the forms
+			       to control the marquee data - it assigns 
+			       times to the dance cycle
+
+ ./views/ctl-mode.erb	     - this form selects the mode. If teach is
+  /ctl/mode		       selected, you get redirected to a selection
+  			       screen to select the particular teaching
+			       .....
+
+ ./views/ctl-teaching
+
+  TODO: add other control pages here as written....
+
+ ./views/dance               - used to render the dance-mode page. Has html,
+  /dance		       stylesheet, javascript.  Used when the 
+			       browser hits the page /dance - it includes
+			       videos reachable from the ./public/ 
+			       directory.
+
+ ./views/teach		     - used to render the teach-mode page, similar
+  /teach	  	       in structure to the above.
+
+If you want to adjust the look of the pages, the above two files are
+where you want to go first.
+
+Videos, as mentioned, are stored in the ./public/ directory and there is a
+one-to-one mapping from the filenames to the html pages. So './public/foo' has
+the url path '/foo'. All teaching videos are stored as so:
+
+ ./public/teaching-videos/
+
+ ./public/teaching-videos/01/                  
+ ./public/teaching-videos/01/<some-name>.<vid>
+ ./public/teaching-videos/01/caption.<img>
+
+ ./public/teaching-videos/02/
+ ....
+
+  <vid> can be one of '.ogv' or '.mp4'
+
+  <img> can be one of '.jpg', '.jpeg', '.gif' and '.png'
+
+The literal text of the video file, <some-name> is used
+to list this teaching video on the video selection page.
+
+Just add as many teaching videos as you like using this layout.  They
+are presented ordered alphabetically by the sub-directory name, '01'
+and '02' in the above examples.  You can use any sub-directory names
+you like - '0X' is just a convention I use.
+
+The dance videos are layed out as so:
+
+  ./public/dancing-videos/
+  ./public/dancing-videos/rhs.<vid>
+  ./public/dancing-videos/lhs.<vid>
+  ./public/dancing-videos/caption.<img>
+
+We use the same convention for <vid> and <img> as above.
+It's a good idea to use the same format <vid> for left 
+and right videos - they resize a little differently.
+
+
+Miscellaneous pages:
+
+  ./public/images/         - various cheesy images for 'buttons'
+  ./public/jquery-1.4.js   - javascript library for ajax, etc 
+  ./public/player.swf      - the flash player useds for mp4 videos
+  ./public/ctl.css	   - CSS stylesheet data. Look at this for colors, 
+  			     font sizing, etc
+
+
+Enjoy the burn!
+
+-Randy
