@@ -1,9 +1,10 @@
 
 On a bare 10.04 Ubuntu system, live distro on a USB flash stick.
 
-The big open partition 
+The big open partition is /cdrom - you have to be root to use it.
+I left it as VFAT.
 
-is how I did the setup:
+This how I did the setup:
 
   sudo apt-get install ruby
   sudo apt-get install rubygems
@@ -68,10 +69,10 @@ Misc:
 
 Copy distrbution to /cdrom/contra...  FIXME
 
-Create a place for the state info, /var/contra, chmod it 1777
-and set up at the top of app.rb:
+Create a place for the state info, /var/contra/data, chmod it 1777 and
+set up at the top of app.rb:
 
-   DATA_DIR = '/var/contra'
+   DATA_DIR = '/var/contra/data'
 
 
 
